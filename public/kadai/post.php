@@ -63,9 +63,7 @@ function convertReplyAnchors($content)
 }
 
 // 返信を一気に20個投稿する関数
-if (isset($_POST['reply20times']))
-{
-    global $dbh;
+if (isset($_POST['reply20times'])) {
     $insert_reply_sth = $dbh->prepare("INSERT INTO replies (post_id, reply_number, content) VALUES (:post_id, :reply_number, :content)");
     $i = 2;
     for (; $i <= 20; $i++) {
@@ -110,14 +108,25 @@ if (isset($_POST['reply20times']))
             margin-bottom: 20px;
         }
 
-        .post-title {
-            font-size: 24px;
-            font-weight: bold;
+        
+        .post-header {
+            display: flex;
+            justify-content: start;
+            align-items: center;
             margin-bottom: 10px;
+        }
+        
+        .post-title {
+            font-weight: bold;
+            margin-right: 30px;
+        }
+
+        .post-header-content {
+            margin-right: 10px;
         }
 
         .post-content {
-            margin-bottom: 20px;
+            margin-left: 10px;
         }
 
         .reply {
@@ -172,9 +181,12 @@ if (isset($_POST['reply20times']))
         </header>
 
         <!-- 投稿の表示 -->
-        <div class="post-title" id="reply-1"><?= htmlspecialchars($post['title']) ?></div>
+        <div class="post-header">
+            <h2 class="post-title" id="reply-1"><?= htmlspecialchars($post['title']) ?></h2>
+            <p class="post-header-content">ID: 1</p>
+            <p class="post-header-content">投稿日: <?= htmlspecialchars($post['created_at']) ?></p>
+        </div>
         <div class="post-content"><?= nl2br(htmlspecialchars($post['content'])) ?></div>
-        <div class="post-date">投稿日: <?= htmlspecialchars($post['created_at']) ?></div>
 
         <hr>
 
@@ -191,10 +203,10 @@ if (isset($_POST['reply20times']))
             <?php foreach ($replies as $reply): ?>
                 <div class="reply" id="reply-<?= $reply['id'] ?>">
                     <div class="reply-header">
-                        <span class="reply-header-span">ID: <?= htmlspecialchars($reply['reply_number']) ?></span>
-                        <span class="reply-header-span">投稿日: <?= htmlspecialchars($reply['created_at']) ?></span>
+                        <p class="reply-header-span">ID: <?= htmlspecialchars($reply['reply_number']) ?></p>
+                        <p class="reply-header-span">投稿日: <?= htmlspecialchars($reply['created_at']) ?></p>
                         <a class="reply-anchor" href="#reply"
-                            onclick="document.getElementById('reply-content').value += '>><?= $reply['reply_number'] ?> ';"><span>返信する</span></a>
+                            onclick="document.getElementById('reply-content').value += '>><?= $reply['reply_number'] ?> ';">返信する</a>
                     </div>
                     <div class="reply-content"><?= nl2br(convertReplyAnchors($reply['content'])) ?></div>
                 </div>
