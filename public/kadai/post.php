@@ -44,25 +44,7 @@ if (isset($_POST['content'])) {
     header("Location: ./post.php?id=" . $post_id);
     return;
 }
-
-// 返信データを取得
-$replies_sth = $dbh->prepare("SELECT * FROM replies WHERE post_id = :post_id ORDER BY id ASC");
-$replies_sth->execute([":post_id" => $post_id]);
-$replies = $replies_sth->fetchAll(PDO::FETCH_ASSOC);
-
-
-// >>1をリンクに置き換える関数
-function convertReplyAnchors($content)
-{
-    // ">>数字" にマッチする部分を探し、それをリンクに置き換える
-    return preg_replace_callback('/&gt;&gt;(\d+)/', function ($matches) {
-        $reply_id = intval($matches[1]);
-        // リンクとして表示。指定された返信IDの場所にスクロールさせるリンクを生成
-        return '<a href="#reply-' . $reply_id . '">>>' . $reply_id . '</a>';
-    }, htmlspecialchars($content));
-}
-
-// 返信を一気に20個投稿する関数
+// 返信を一気に20個投稿するボタンが押された場合の処理
 if (isset($_POST['reply20times'])) {
     $insert_reply_sth = $dbh->prepare("INSERT INTO replies (post_id, reply_number, content) VALUES (:post_id, :reply_number, :content)");
     $i = 2;
@@ -81,6 +63,24 @@ if (isset($_POST['reply20times'])) {
     header("HTTP/1.1 302 Found");
     header("Location: ./post.php?id=" . $post_id);
     return;
+}
+
+
+// 返信データを取得
+$replies_sth = $dbh->prepare("SELECT * FROM replies WHERE post_id = :post_id ORDER BY id ASC");
+$replies_sth->execute([":post_id" => $post_id]);
+$replies = $replies_sth->fetchAll(PDO::FETCH_ASSOC);
+
+
+// >>1をリンクに置き換える関数
+function convertReplyAnchors($content)
+{
+    // ">>数字" にマッチする部分を探し、それをリンクに置き換える
+    return preg_replace_callback('/&gt;&gt;(\d+)/', function ($matches) {
+        $reply_id = intval($matches[1]);
+        // リンクとして表示。指定された返信IDの場所にスクロールさせるリンクを生成
+        return '<a href="#reply-' . $reply_id . '">>>' . $reply_id . '</a>';
+    }, htmlspecialchars($content));
 }
 ?>
 
