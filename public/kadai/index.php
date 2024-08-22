@@ -116,13 +116,13 @@ $select_sth->execute();
             <hr>
             <?php foreach ($select_sth as $data): ?>
                 <dl>
-                    <a href="#">
+                    <a href="./post.php?id=<?= $data['id'] ?>">
                         <dt>タイトル</dt>
                         <dd><?= $data["title"] ?></dd>
                     </a>
 
-                        <dt>作成日時</dt>
-                        <dd><?= $data["created_at"] ?></dd>
+                    <dt>作成日時</dt>
+                    <dd><?= $data["created_at"] ?></dd>
                 </dl>
             <?php endforeach ?>
         <?php endif ?>
