@@ -216,7 +216,7 @@ function convertReplyAnchors($content)
         <hr>
 
         <!-- 返信フォーム -->
-        <h2>返信を投稿する</h2>
+        <h2 id="reply-form">返信を投稿する</h2>
         <form class="reply-form" action="post.php?id=<?= $post_id ?>" method="post">
             <textarea id="reply-content" name="content" rows="5" placeholder="返信内容を入力" required></textarea>
             <input type="submit" value="返信する">
