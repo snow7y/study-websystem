@@ -29,7 +29,7 @@
     CREATE TABLE replies (
         id INT AUTO_INCREMENT PRIMARY KEY,
         post_id INT NOT NULL,
-        parent_reply_id INT DEFAULT NULL,
+        reply_number INT NOT NULL,
         content TEXT NOT NULL,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE

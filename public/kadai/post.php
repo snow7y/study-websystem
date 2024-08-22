@@ -21,10 +21,21 @@ if (!$post) {
 
 // 返信を投稿する処理
 if (isset($_POST['content'])) {
+    // 返信の最大を取得
+    $reply_number_sth = $dbh->prepare("SELECT MAX(reply_number) FROM replies WHERE post_id = :post_id");
+    $reply_number_sth->execute([":post_id" => $post_id]);
+    $reply_number = $reply_number_sth->fetchColumn();
+    // もし返信がない場合は2をセットしそれ以外は+1する
+    if (!$reply_number) {
+        $reply_number = 2;
+    } else {
+        $reply_number++;
+    }
     // 返信を挿入
-    $insert_reply_sth = $dbh->prepare("INSERT INTO replies (post_id, content) VALUES (:post_id, :content)");
+    $insert_reply_sth = $dbh->prepare("INSERT INTO replies (post_id, reply_number, content) VALUES (:post_id, :reply_number, :content)");
     $insert_reply_sth->execute([
         ":post_id" => $post_id,
+        ":reply_number" => $reply_number,
         ":content" => $_POST["content"],
     ]);
 
@@ -35,19 +46,43 @@ if (isset($_POST['content'])) {
 }
 
 // 返信データを取得
-$replies_sth = $dbh->prepare("SELECT * FROM replies WHERE post_id = :post_id ORDER BY created_at ASC");
+$replies_sth = $dbh->prepare("SELECT * FROM replies WHERE post_id = :post_id ORDER BY id ASC");
 $replies_sth->execute([":post_id" => $post_id]);
 $replies = $replies_sth->fetchAll(PDO::FETCH_ASSOC);
 
 
 // >>1をリンクに置き換える関数
-function convertReplyAnchors($content) {
+function convertReplyAnchors($content)
+{
     // ">>数字" にマッチする部分を探し、それをリンクに置き換える
     return preg_replace_callback('/&gt;&gt;(\d+)/', function ($matches) {
         $reply_id = intval($matches[1]);
         // リンクとして表示。指定された返信IDの場所にスクロールさせるリンクを生成
         return '<a href="#reply-' . $reply_id . '">>>' . $reply_id . '</a>';
     }, htmlspecialchars($content));
+}
+
+// 返信を一気に20個投稿する関数
+function reply20times($post_id)
+{
+    global $dbh;
+    $insert_reply_sth = $dbh->prepare("INSERT INTO replies (post_id, reply_number, content) VALUES (:post_id, :reply_number, :content)");
+    $i = 2;
+    for (; $i <= 20; $i++) {
+        $insert_reply_sth->execute([
+            ":post_id" => $post_id,
+            ":reply_number" => $i,
+            ":content" => "ID: {$i} の返信です。",
+        ]);
+    }
+    $insert_reply_sth->execute([
+        ":post_id" => $post_id,
+        ":reply_number" => $i,
+        ":content" => "ID: {$i} の返信です。ID:1までのレスアンカーのテストです。 >>1",
+    ]);
+    header("HTTP/1.1 302 Found");
+    header("Location: ./post.php?id=" . $post_id);
+    return;
 }
 ?>
 
@@ -137,7 +172,7 @@ function convertReplyAnchors($content) {
         </header>
 
         <!-- 投稿の表示 -->
-        <div class="post-title"><?= htmlspecialchars($post['title']) ?></div>
+        <div class="post-title" id="reply-1"><?= htmlspecialchars($post['title']) ?></div>
         <div class="post-content"><?= nl2br(htmlspecialchars($post['content'])) ?></div>
         <div class="post-date">投稿日: <?= htmlspecialchars($post['created_at']) ?></div>
 
@@ -147,13 +182,17 @@ function convertReplyAnchors($content) {
         <h2>返信一覧</h2>
         <?php if (empty($replies)): ?>
             <p>まだ返信がありません。</p>
+            <a class="reply-anchor" href="#reply"
+                onclick="document.getElementById('reply-content').value += '>>1 ';"><span>最初の返信をする</span></a>
+            <button onclick="<?= reply20times($post_id) ?>">レスアンカー機能のテスト用ボタン</button>
         <?php else: ?>
             <?php foreach ($replies as $reply): ?>
                 <div class="reply" id="reply-<?= $reply['id'] ?>">
                     <div class="reply-header">
-                        <span class="reply-header-span">ID: <?= htmlspecialchars($reply['id']) ?></span>
+                        <span class="reply-header-span">ID: <?= htmlspecialchars($reply['reply_number']) ?></span>
                         <span class="reply-header-span">投稿日: <?= htmlspecialchars($reply['created_at']) ?></span>
-                        <a class="reply-anchor" href="#reply" onclick="document.getElementById('reply-content').value += '>><?= $reply['id'] ?> \n';"><span>返信する</span></a>
+                        <a class="reply-anchor" href="#reply"
+                            onclick="document.getElementById('reply-content').value += '>><?= $reply['reply_number'] ?> ';"><span>返信する</span></a>
                     </div>
                     <div class="reply-content"><?= nl2br(convertReplyAnchors($reply['content'])) ?></div>
                 </div>
