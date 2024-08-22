@@ -32,8 +32,7 @@
         parent_reply_id INT DEFAULT NULL,
         content TEXT NOT NULL,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
-        FOREIGN KEY (parent_reply_id) REFERENCES replies(id) ON DELETE SET NULL
+        FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE
     );
     ```
     作れたかどうか確認する
