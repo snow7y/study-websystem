@@ -205,7 +205,7 @@ function convertReplyAnchors($content)
                     <div class="reply-header">
                         <p class="reply-header-span">ID: <?= htmlspecialchars($reply['reply_number']) ?></p>
                         <p class="reply-header-span">投稿日: <?= htmlspecialchars($reply['created_at']) ?></p>
-                        <a class="reply-anchor" href="#reply"
+                        <a class="reply-anchor" href="#reply-form"
                             onclick="document.getElementById('reply-content').value += '>><?= $reply['reply_number'] ?> ';">返信する</a>
                     </div>
                     <div class="reply-content"><?= nl2br(convertReplyAnchors($reply['content'])) ?></div>
