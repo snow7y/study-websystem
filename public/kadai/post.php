@@ -63,7 +63,7 @@ function convertReplyAnchors($content)
 }
 
 // 返信を一気に20個投稿する関数
-function reply20times($post_id)
+if (isset($_POST['reply20times']))
 {
     global $dbh;
     $insert_reply_sth = $dbh->prepare("INSERT INTO replies (post_id, reply_number, content) VALUES (:post_id, :reply_number, :content)");
@@ -184,7 +184,9 @@ function reply20times($post_id)
             <p>まだ返信がありません。</p>
             <a class="reply-anchor" href="#reply"
                 onclick="document.getElementById('reply-content').value += '>>1 ';"><span>最初の返信をする</span></a>
-            <button onclick="<?= reply20times($post_id) ?>">レスアンカー機能のテスト用ボタン</button>
+            <form action="post.php?id=<?= $post_id ?>" method="post">
+                <input type="submit" value="20個の返信を投稿する" name="reply20times">
+            </form>
         <?php else: ?>
             <?php foreach ($replies as $reply): ?>
                 <div class="reply" id="reply-<?= $reply['id'] ?>">
