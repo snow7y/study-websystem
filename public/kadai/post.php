@@ -66,20 +66,53 @@ if (isset($_POST['reply20times'])) {
 }
 
 
+
+// ページのカウント処理
+$page = isset($_GET['page']) ? intval($_GET['page']) : 1;
+$count_per_page = 10;
+$skip_count = $count_per_page * ($page - 1);
+
+$count_sth = $dbh->prepare('SELECT COUNT(*) FROM replies WHERE post_id = :post_id;');
+$count_sth->execute([":post_id" => $post_id,]);
+
+$count_all = $count_sth->fetchColumn();
+
+if ($skip_count > $count_all) {
+    // スキップする行数が全行数より多かったらおかしいのでエラーメッセージ表示し終了
+    print ('このページは存在しません!');
+    return;
+}
+
 // 返信データを取得
-$replies_sth = $dbh->prepare("SELECT * FROM replies WHERE post_id = :post_id ORDER BY id ASC");
-$replies_sth->execute([":post_id" => $post_id]);
+$replies_sth = $dbh->prepare("SELECT * FROM replies WHERE post_id = :post_id ORDER BY id ASC LIMIT :count_per_page OFFSET :skip_count");
+$replies_sth->bindparam(':post_id', $post_id, PDO::PARAM_INT);
+$replies_sth->bindParam(':count_per_page', $count_per_page, PDO::PARAM_INT);
+$replies_sth->bindParam(':skip_count', $skip_count, PDO::PARAM_INT);
+$replies_sth->execute();
 $replies = $replies_sth->fetchAll(PDO::FETCH_ASSOC);
 
+// html内で割り振るid用
+$html_id = 1;
 
 // >>1をリンクに置き換える関数
-function convertReplyAnchors($content)
+function convertReplyAnchors($post_id, $content)
 {
     // ">>数字" にマッチする部分を探し、それをリンクに置き換える
-    return preg_replace_callback('/&gt;&gt;(\d+)/', function ($matches) {
+    return preg_replace_callback('/&gt;&gt;(\d+)/', function ($matches) use ( $post_id) {
         $reply_id = intval($matches[1]);
+        
+        // reply_idの一桁目と二桁目以上を分け、二桁目以上がある場合pageに置き換える
+        $page_id = intval(substr($reply_id, 0, -1)); // 二桁目以上が存在する場合、それをpage_idに
+        $page_id ++;
+        $reply_id = intval(substr($reply_id, -1));  // 一桁目をreply_idとして扱う
+
         // リンクとして表示。指定された返信IDの場所にスクロールさせるリンクを生成
-        return '<a href="#reply-' . $reply_id . '">>>' . $reply_id . '</a>';
+        // page_idが0の場合（例えば、>>3 の場合）、リンクにはpage_idを含めない
+        if ($page_id == 0) {
+            return '<a href="#reply-' . $reply_id . '">>>' . $matches[1] . '</a>';
+        } else {
+            return '<a href="?id=' . $post_id . '&page=' . $page_id . '#reply-' . $reply_id . '">>>' . $matches[1] . '</a>';
+        }
     }, htmlspecialchars($content));
 }
 ?>
@@ -182,7 +215,7 @@ function convertReplyAnchors($content)
 
         <!-- 投稿の表示 -->
         <div class="post-header">
-            <h2 class="post-title" id="reply-1"><?= htmlspecialchars($post['title']) ?></h2>
+            <h2 class="post-title" id="reply-<?= $html_id++ ?>"><?= htmlspecialchars($post['title']) ?></h2>
             <p class="post-header-content">ID: 1</p>
             <p class="post-header-content">投稿日: <?= htmlspecialchars($post['created_at']) ?></p>
         </div>
@@ -200,15 +233,29 @@ function convertReplyAnchors($content)
                 <input type="submit" value="20個の返信を投稿する" name="reply20times">
             </form>
         <?php else: ?>
+
+            <div style="display: flex; justify-content: space-between; margin-bottom: 2em;">
+                <div>
+                    <?php if ($page > 1): // 前のページがあれば表示 ?>
+                        <a href="?id=<?= $post_id ?>&page=<?= $page - 1 ?>">前のページ</a>
+                    <?php endif; ?>
+                </div>
+                <div>
+                    <?php if ($count_all > $page * $count_per_page): // 次のページがあれば表示 ?>
+                        <a href="?id=<?= $post_id ?>&page=<?= $page + 1 ?>">次のページ</a>
+                    <?php endif; ?>
+                </div>
+            </div>
+
             <?php foreach ($replies as $reply): ?>
-                <div class="reply" id="reply-<?= $reply['id'] ?>">
+                <div class="reply" id="reply-<?= $html_id++ ?>">
                     <div class="reply-header">
                         <p class="reply-header-span">ID: <?= htmlspecialchars($reply['reply_number']) ?></p>
                         <p class="reply-header-span">投稿日: <?= htmlspecialchars($reply['created_at']) ?></p>
                         <a class="reply-anchor" href="#reply-form"
                             onclick="document.getElementById('reply-content').value += '>><?= $reply['reply_number'] ?> ';">返信する</a>
                     </div>
-                    <div class="reply-content"><?= nl2br(convertReplyAnchors($reply['content'])) ?></div>
+                    <div class="reply-content"><?= nl2br(convertReplyAnchors($post_id, $reply['content'])) ?></div>
                 </div>
             <?php endforeach ?>
         <?php endif ?>
