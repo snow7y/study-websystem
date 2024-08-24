@@ -13,8 +13,11 @@ if (isset($_POST['title']) && isset($_POST['content'])) {
 
     // 処理が終わったらリダイレクトする
     // リダイレクトしないと，リロード時にまた同じ内容でPOSTすることになる
+    $redirect_sth = $dbh->prepare("SELECT id FROM posts ORDER BY id DESC LIMIT 1");
+    $redirect_sth->execute();
+    $redirect = $redirect_sth->fetchColumn();
     header("HTTP/1.1 302 Found");
-    header("Location: ./index.php");
+    header("Location: ./post.php?id={$redirect}");
     return;
 }
 
