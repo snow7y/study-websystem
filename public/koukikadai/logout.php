@@ -1,6 +1,6 @@
 <?php
 session_start();
-$_SESSTION = array();
+$_SESSION = array();
 session_destroy();
 ?>
 
