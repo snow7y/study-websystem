@@ -11,23 +11,20 @@ if (!empty($_POST['name']) && !empty($_POST['email']) && !empty($_POST['password
         ':password' => password_hash($_POST['password'], PASSWORD_DEFAULT),
     ]);
 
-    // 登録完了後、ログイン画面へリダイレクト
+    // 登録完了後、ログイン画面へ自動リダイレクト
     header("HTTP/1.1 302 Found");
     header("Location: ./login.php");
     return;
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
   <title>会員登録</title>
-  <!-- Tailwind CSSをCDNから読み込み -->
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 min-h-screen flex flex-col">
-
   <!-- ヘッダー -->
   <header class="bg-blue-600 text-white">
     <div class="container mx-auto px-4 py-4">
@@ -35,7 +32,7 @@ if (!empty($_POST['name']) && !empty($_POST['email']) && !empty($_POST['password
     </div>
   </header>
 
-  <!-- メインコンテンツ -->
+  <!-- メイン -->
   <main class="container mx-auto px-4 py-8 flex-1">
     <div class="max-w-md mx-auto bg-white p-6 rounded shadow">
       <h2 class="text-2xl font-bold mb-6 text-center">新規アカウント作成</h2>
@@ -80,14 +77,22 @@ if (!empty($_POST['name']) && !empty($_POST['email']) && !empty($_POST['password
           </button>
         </div>
       </form>
+
+      <!-- 「ログイン画面へ戻る」ボタン（任意） -->
+      <div class="text-center mt-4">
+        <a
+          href="./login.php"
+          class="inline-block px-4 py-2 text-blue-600 underline hover:text-blue-800"
+        >
+          既にアカウントをお持ちの場合はこちら
+        </a>
+      </div>
     </div>
   </main>
 
-  <!-- フッター -->
   <footer class="bg-gray-800 text-gray-100 py-4 text-center text-sm">
     &copy; 2025 My BBS. All rights reserved.
   </footer>
-
 </body>
 </html>
 

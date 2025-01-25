@@ -3,50 +3,38 @@
 $dbh = new PDO('mysql:host=mysql;dbname=kyototech', 'root', '');
 
 if (!empty($_POST['email']) && !empty($_POST['password'])) {
-    // POSTで email と password が送られてきた場合のみログイン処理
     $select_sth = $dbh->prepare("SELECT * FROM users WHERE email = :email ORDER BY id DESC LIMIT 1");
-    $select_sth->execute([
-        ':email' => $_POST['email'],
-    ]);
+    $select_sth->execute([':email' => $_POST['email']]);
     $user = $select_sth->fetch();
 
     if (empty($user)) {
-        // 該当する会員がいなければエラー
         header("HTTP/1.1 302 Found");
         header("Location: ./login.php?error=1");
         return;
     }
 
-    // パスワードが正しいかチェック
-    $correct_password = password_verify($_POST['password'], $user['password']);
-    if (!$correct_password) {
-        // パスワードが違っていればエラー
+    if (!password_verify($_POST['password'], $user['password'])) {
         header("HTTP/1.1 302 Found");
         header("Location: ./login.php?error=1");
         return;
     }
 
     session_start();
-    // ログインできた会員IDをセッションに保存
     $_SESSION["login_user_id"] = $user['id'];
 
-    // ログイン成功後、掲示板へリダイレクト
     header("HTTP/1.1 302 Found");
     header("Location: ./bbs.php");
     return;
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
   <title>ログイン</title>
-  <!-- Tailwind CSSをCDNから読み込み -->
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 min-h-screen flex flex-col">
-
   <!-- ヘッダー -->
   <header class="bg-blue-600 text-white">
     <div class="container mx-auto px-4 py-4">
@@ -54,7 +42,7 @@ if (!empty($_POST['email']) && !empty($_POST['password'])) {
     </div>
   </header>
 
-  <!-- メインコンテンツ -->
+  <!-- メイン -->
   <main class="container mx-auto px-4 py-8 flex-1">
     <div class="max-w-md mx-auto bg-white p-6 rounded shadow">
       <h2 class="text-2xl font-bold mb-6 text-center">ログイン</h2>
@@ -96,10 +84,10 @@ if (!empty($_POST['email']) && !empty($_POST['password'])) {
         </div>
       </form>
 
-      <!-- アカウントがない人向けのリンクを下に追加 -->
+      <!-- サインアップリンクを追加 -->
       <div class="text-center mt-4">
         <p class="text-sm text-gray-700">
-          アカウントをまだお持ちでないですか？　
+          アカウントをまだお持ちでないですか？
           <a href="./signup.php" class="text-blue-500 hover:underline">
             会員登録はこちら
           </a>
@@ -108,11 +96,9 @@ if (!empty($_POST['email']) && !empty($_POST['password'])) {
     </div>
   </main>
 
-  <!-- フッター -->
   <footer class="bg-gray-800 text-gray-100 py-4 text-center text-sm">
     &copy; 2025 My BBS. All rights reserved.
   </footer>
-
 </body>
 </html>
 
