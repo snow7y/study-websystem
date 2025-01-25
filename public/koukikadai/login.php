@@ -3,8 +3,7 @@
 $dbh = new PDO('mysql:host=mysql;dbname=kyototech', 'root', '');
 
 if (!empty($_POST['email']) && !empty($_POST['password'])) {
-    // POSTで email と password が送られてきた場合のみログイン処理をする
-    // email から会員情報を引く
+    // POSTで email と password が送られてきた場合のみログイン処理
     $select_sth = $dbh->prepare("SELECT * FROM users WHERE email = :email ORDER BY id DESC LIMIT 1");
     $select_sth->execute([
         ':email' => $_POST['email'],
@@ -12,7 +11,7 @@ if (!empty($_POST['email']) && !empty($_POST['password'])) {
     $user = $select_sth->fetch();
 
     if (empty($user)) {
-        // 入力されたメールアドレスに該当する会員が見つからなければ、処理を中断しエラー用クエリパラメータ付きのログイン画面URLにリダイレクト
+        // 該当する会員がいなければエラー
         header("HTTP/1.1 302 Found");
         header("Location: ./login.php?error=1");
         return;
@@ -21,46 +20,99 @@ if (!empty($_POST['email']) && !empty($_POST['password'])) {
     // パスワードが正しいかチェック
     $correct_password = password_verify($_POST['password'], $user['password']);
     if (!$correct_password) {
-        // パスワードが間違っていれば、処理を中断しエラー用クエリパラメータ付きのログイン画面URLにリダイレクト
+        // パスワードが違っていればエラー
         header("HTTP/1.1 302 Found");
         header("Location: ./login.php?error=1");
         return;
     }
 
-    // PHPの標準セッション管理機能使う際は、まずこの session_start関数を呼ぶ必要がある
     session_start();
-
-    // PHPのセッション管理機能を使い、ログインできた会員情報の主キー(id)を設定
+    // ログインできた会員IDをセッションに保存
     $_SESSION["login_user_id"] = $user['id'];
 
-
-    // ログインが成功したらログイン完了画面にリダイレクト
+    // ログイン成功後、掲示板へリダイレクト
     header("HTTP/1.1 302 Found");
     header("Location: ./bbs.php");
     return;
 }
 ?>
 
-<h1>ログイン</h1>
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>ログイン</title>
+  <!-- Tailwind CSSをCDNから読み込み -->
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col">
 
-<!-- ログインフォーム -->
-<form method="POST">
-    <!-- input要素のtype属性は全部textでも動くが、適切なものに設定すると利用者は使いやすい -->
-    <label>
-        メールアドレス:
-        <input type="email" name="email">
-    </label>
-    <br>
-    <label>
-        パスワード:
-        <input type="password" name="password" minlength="6">
-    </label>
-    <br>
-    <button type="submit">決定</button>
-</form>
-
-<?php if (!empty($_GET['error'])): // エラー用のクエリパラメータがある場合はエラーメッセージ表示 ?>
-    <div style="color: red;">
-        メールアドレスかパスワードが間違っています。
+  <!-- ヘッダー -->
+  <header class="bg-blue-600 text-white">
+    <div class="container mx-auto px-4 py-4">
+      <h1 class="text-xl font-bold">サイトログイン</h1>
     </div>
-<?php endif; ?>
+  </header>
+
+  <!-- メインコンテンツ -->
+  <main class="container mx-auto px-4 py-8 flex-1">
+    <div class="max-w-md mx-auto bg-white p-6 rounded shadow">
+      <h2 class="text-2xl font-bold mb-6 text-center">ログイン</h2>
+
+      <form method="POST" class="space-y-4">
+        <div>
+          <label class="block mb-1 font-semibold">メールアドレス</label>
+          <input
+            type="email"
+            name="email"
+            required
+            class="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring focus:ring-blue-300"
+          >
+        </div>
+        <div>
+          <label class="block mb-1 font-semibold">パスワード</label>
+          <input
+            type="password"
+            name="password"
+            minlength="6"
+            required
+            class="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring focus:ring-blue-300"
+          >
+        </div>
+
+        <?php if (!empty($_GET['error'])): ?>
+          <div class="text-red-500 text-sm">
+            メールアドレスかパスワードが間違っています。
+          </div>
+        <?php endif; ?>
+
+        <div>
+          <button
+            type="submit"
+            class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition-colors"
+          >
+            決定
+          </button>
+        </div>
+      </form>
+
+      <!-- アカウントがない人向けのリンクを下に追加 -->
+      <div class="text-center mt-4">
+        <p class="text-sm text-gray-700">
+          アカウントをまだお持ちでないですか？　
+          <a href="./signup.php" class="text-blue-500 hover:underline">
+            会員登録はこちら
+          </a>
+        </p>
+      </div>
+    </div>
+  </main>
+
+  <!-- フッター -->
+  <footer class="bg-gray-800 text-gray-100 py-4 text-center text-sm">
+    &copy; 2025 My BBS. All rights reserved.
+  </footer>
+
+</body>
+</html>
+
