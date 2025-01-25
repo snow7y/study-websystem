@@ -20,24 +20,25 @@
    docker compose exec mysql mysql kyototech
    ```
    SQL文でテーブルを作成
-   postsテーブル
+   usersテーブル
    ```sql
-    CREATE TABLE posts (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        title VARCHAR(255) NOT NULL,
-        content TEXT NOT NULL,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    CREATE TABLE `users` (
+        `id` INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+        `name` TEXT NOT NULL,
+        `email` TEXT NOT NULL,
+        `password` TEXT NOT NULL,
+        `icon_filename` TEXT DEFAULT NULL,
+        `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
     );
     ```
-    repliesテーブル
+    投稿テーブル
     ```sql
-    CREATE TABLE replies (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        post_id INT NOT NULL,
-        reply_number INT NOT NULL,
-        content TEXT NOT NULL,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE
+    CREATE TABLE `bbs_entries` (
+        `id` INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+        `user_id` INT UNSIGNED NOT NULL,
+        `body` TEXT NOT NULL,
+        `image_filename` TEXT DEFAULT NULL,
+        `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
     );
     ```
     作れたかどうか確認する
