@@ -23,14 +23,14 @@ if (!empty($_SESSION['login_user_id'])) {
         $image_filename = time() . bin2hex(random_bytes(16)) . '.' . $extension;
         
         // 実際にファイルを保存するパス。bbs.phpで利用したパスと同じようにするか、別フォルダを作るかは運用次第
-        $filepath = '/var/www/upload/icon/' . $image_filename;
+        $filepath = '/var/www/upload/image/' . $image_filename;
         move_uploaded_file($_FILES['icon_image']['tmp_name'], $filepath);
 
         // DBのusersテーブルにアイコンファイル名を更新するカラム(icon_filename等)があると仮定
         // DB構造に合わせて修正
-        $update_sth = $dbh->prepare("UPDATE users SET icon_filename = :icon_filename WHERE id = :id");
+        $update_sth = $dbh->prepare("UPDATE users SET image_filename = :image_filename WHERE id = :id");
         $update_sth->execute([
-            ':icon_filename' => $image_filename,
+            ':image_filename' => $image_filename,
             ':id' => $_SESSION['login_user_id'],
         ]);
 
@@ -82,6 +82,7 @@ if (!empty($_SESSION['login_user_id'])) {
         <?php if (!empty($_GET['uploaded'])): ?>
           <div class="mb-4 p-3 bg-green-100 border border-green-300 text-green-800 rounded">
             アイコン画像が変更されました。
+            <a href="./bbs.php">投稿サイトに戻る</a>
           </div>
         <?php endif; ?>
 
