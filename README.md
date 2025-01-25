@@ -1,9 +1,4 @@
-# ウェブ技術各論前期課題
-
-## 概要
-このリポジトリはウェブ技術各論の前期課題で作成した掲示板のソースコードです。
-主な機能としては、投稿、返信が可能になっています。
-レスアンカー機能も実装しています。
+# ウェブ技術各論後期課題
 
 ## 始め方
 1. このリポジトリを手元に持ってくる
@@ -13,7 +8,7 @@
 2. Dockerfileを使用して環境を構築する
    ```bash
    cd study-websystem
-   docker compose up
+   docker compose up --build
    ```
 3. データベースにテーブルを作成する
    ``` bash
@@ -27,7 +22,7 @@
         `name` TEXT NOT NULL,
         `email` TEXT NOT NULL,
         `password` TEXT NOT NULL,
-        `icon_filename` TEXT DEFAULT NULL,
+        `image_filename` TEXT DEFAULT NULL,
         `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
     );
     ```
@@ -45,4 +40,4 @@
     ```sql
     show tables;
     ```
-4. ブラウザで`localhost/kadai/index.php`にアクセスすることで見ることができます。
+4. ブラウザで`localhost/koukikadai/login.php`にアクセスすることで見ることができます。
