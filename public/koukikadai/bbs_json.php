@@ -1,7 +1,7 @@
 <?php
 $dbh = new PDO('mysql:host=mysql;dbname=kyototech', 'root', '');
 session_start();
-$sql = 'SELECT bbs_entries.*, users.name AS user_name, users.icon_filename AS user_icon_filename'
+$sql = 'SELECT bbs_entries.*, users.name AS user_name, users.image_filename AS user_icon_filename'
     . ' FROM bbs_entries'
     . ' INNER JOIN users ON bbs_entries.user_id = users.id'
     . ' ORDER BY bbs_entries.created_at DESC';
